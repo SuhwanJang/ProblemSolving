@@ -1,40 +1,54 @@
 #include <string>
 #include <vector>
-#include <cmath>
-#include <iostream>
 #include <algorithm>
-#include <unordered_map>
+#include <map>
 using namespace std;
 
-int answer=1;
 
-int solution(vector<vector<string>> clothes)
+
+int hashCode(string str, int size)
 {
-	unordered_map<string, int> m;
-	unordered_map<string, int>::iterator iter;
-	int i;
-	for (i = 0; i < clothes.size(); i++)
+	int convert = hash<string>{}(str);
+	int code = abs(convert%size);
+	return code;
+}
+vector<int> solution(vector<string> genres, vector<int> plays) {
+
+	int i, csize = genres.size();
+	vector<int> answer;
+	vector<map<int, int>> chaining_table(csize);
+	map<int, int> codeWithPlayCnt(csize);
+	for (i = 0; i < csize; i++)
 	{
-		iter = m.find(clothes[i][1]);
-		if (iter == m.end())
-		{
-			m.insert({ clothes[i][1], 1});
+		string genre = genres[i];
+		int genre_code = hashCode(genre, csize);
+		chaining_table[genre_code].insert({ plays[i], i });
+
+		auto at = codeWithPlayCnt.find(genre_code);
+		if (at == nullptr) {
+			codeWithPlayCnt.insert({ genre_code, plays[i] });
 		}
 		else {
-			iter->second += 1;
+			at->second += plays[i];
 		}
 	}
 
-	for (iter = m.begin(); iter != m.end(); iter++)
-	{
-		answer *= (iter->second + 1);
-	}
+	sort(codeWithPlayCnt.begin(), codeWithPlayCnt.end());
 
-	return answer-1;
+	for (auto iter : codeWithPlayCnt)
+	{
+		int code = iter->first;
+		sort(chaining_table[code].begin(), chaining_table[code].end());
+		
+		for (auto entry_iter : chaining_table[code])
+		{
+			answer.push_back(entry_iter->second);
+		}
+	}
+	return answer;
 }
+
 int main()
 {
-	cout << solution({ { "ye43", "ah2ead" } ,{ "yee3", "ahead" }, { "yee23", "ahead" }, {"c3ac", "ciis" },{ "cac2", "ciis" },{ "cac", "ciis" } });
-
-	system("pause");
-}            
+	solution({ "classic", "pop", "classic", "classic", "pop" }, { 500, 600, 150, 800 2500 });
+}
